@@ -8,48 +8,50 @@ class GildedRose
   end
 
   def tick
-    if @name != "Aged Brie" and @name != "Backstage passes to a TAFKAL80ETC concert"
-      if @quality > 0
-        if @name != "Sulfuras, Hand of Ragnaros"
-          @quality = @quality - 1
-        end
-      end
+    update_quality
+    update_sell_in
+  end
+
+  private
+
+  def update_quality
+    case @name
+    when "Aged Brie"
+      increase_quality
+    when "Backstage passes to a TAFKAL80ETC concert"
+      update_backstage_pass_quality
+    when "Sulfuras, Hand of Ragnaros"
+      # Sulfuras does not change quality or sell_in
     else
-      if @quality < 50
-        @quality = @quality + 1
-        if @name == "Backstage passes to a TAFKAL80ETC concert"
-          if @days_remaining < 11
-            if @quality < 50
-              @quality = @quality + 1
-            end
-          end
-          if @days_remaining < 6
-            if @quality < 50
-              @quality = @quality + 1
-            end
-          end
-        end
-      end
+      decrease_quality
     end
-    if @name != "Sulfuras, Hand of Ragnaros"
-      @days_remaining = @days_remaining - 1
+  end
+
+  def update_backstage_pass_quality
+    if @days_remaining <= 0
+      @quality = 0
+    elsif @days_remaining <= 5
+      increase_quality_by(3)
+    elsif @days_remaining <= 10
+      increase_quality_by(2)
+    else
+      increase_quality
     end
-    if @days_remaining < 0
-      if @name != "Aged Brie"
-        if @name != "Backstage passes to a TAFKAL80ETC concert"
-          if @quality > 0
-            if @name != "Sulfuras, Hand of Ragnaros"
-              @quality = @quality - 1
-            end
-          end
-        else
-          @quality = @quality - @quality
-        end
-      else
-        if @quality < 50
-          @quality = @quality + 1
-        end
-      end
-    end
+  end
+
+  def update_sell_in
+    @days_remaining -= 1 unless @name == "Sulfuras, Hand of Ragnaros"
+  end
+
+  def increase_quality
+    @quality = [@quality + 1, 50].min
+  end
+
+  def decrease_quality
+    @quality = [@quality - 1, 0].max
+  end
+
+  def increase_quality_by(amount)
+    @quality = [@quality + amount, 50].min
   end
 end
